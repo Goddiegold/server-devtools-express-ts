@@ -12,7 +12,7 @@ if (!encryptionKey) {
 export const devtools = new ServerDevTools({
   auth: {
     username: "admin",
-    password: "test-password",
+    password: "12345678",
   },
   encryption: { key: encryptionKey },
   getCurrentUser: (req) => {
