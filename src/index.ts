@@ -1,5 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
+import mysql from "mysql2/promise";
+import { Pool } from "pg";
 import { devtools } from "../server-devtools.js";
 
 console.log("SERVER_DEVTOOLS_DEBUG=index.ts", process.env.SERVER_DEVTOOLS_DEBUG)
@@ -14,6 +16,17 @@ const userSchema = new mongoose.Schema(
   { collection: "users", timestamps: false },
 );
 const UserModel = mongoose.model("ExpressSmokeUser", userSchema);
+
+const postgresPool = new Pool({
+  connectionString: "postgresql://mac@localhost:5432/server_devtools_test",
+});
+const mysqlPool = mysql.createPool({
+  host: "localhost",
+  port: 3306,
+  user: "devtools",
+  password: "devtools",
+  database: "server_devtools_test",
+});
 
 type SmokeUser = { id: string; email: string; name: string };
 type RequestWithUser = express.Request & { user?: SmokeUser };
@@ -30,6 +43,23 @@ app.use((req, _res, next) => {
 app.use((req, res, next) => devtools.middleware(req, res, next));
 app.use(express.json());
 
+app.get("/users", (_req, res) => res.json([{ id: "user-123", email: "smoke@example.com", name: "Smoke User" }]));
+app.get("/postgres-users", async (_req, res, next) => {
+  try {
+    const result = await postgresPool.query("SELECT * FROM users");
+    res.json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+});
+app.get("/mysql-users", async (_req, res, next) => {
+  try {
+    const [rows] = await mysqlPool.query("SELECT * FROM users");
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
 app.get("/hello", (_req, res) => res.json({ message: "Hello from Express" }));
 app.post("/users", (req, res) => res.status(201).json(req.body));
 app.get("/slow", async (_req, res) => {
@@ -79,7 +109,8 @@ app.get("/mongo-test", async (_req, res, next) => {
       });
     }
 
-    res.json(document);
+    const externalResponse = await fetch("https://jsonplaceholder.typicode.com/todos/1");
+    res.json({ document, external: await externalResponse.json() });
   } catch (error) {
     next(error);
   }
