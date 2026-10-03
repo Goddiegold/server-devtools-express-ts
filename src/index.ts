@@ -1,8 +1,10 @@
 import express from "express";
+import Redis, { type RedisOptions } from "ioredis";
 import mongoose from "mongoose";
 import mysql from "mysql2/promise";
 import { Pool } from "pg";
 import { devtools } from "../server-devtools.js";
+import { registerRedisSmokeRoutes, type RedisSmokeClient } from "./redis-smoke.js";
 
 console.log("SERVER_DEVTOOLS_DEBUG=index.ts", process.env.SERVER_DEVTOOLS_DEBUG)
 
@@ -27,6 +29,18 @@ const mysqlPool = mysql.createPool({
   password: "devtools",
   database: "server_devtools_test",
 });
+const redisConnection: string | RedisOptions = process.env.REDIS_URL ?? (process.env.REDIS_HOST
+  ? {
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
+      ...(process.env.REDIS_USER ? { username: process.env.REDIS_USER } : {}),
+      ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {}),
+      ...(process.env.REDIS_DB_INDEX ? { db: Number(process.env.REDIS_DB_INDEX) } : {}),
+    }
+  : "redis://localhost:6379");
+const redis = typeof redisConnection === "string"
+  ? new Redis(redisConnection)
+  : new Redis(redisConnection);
 
 type SmokeUser = { id: string; email: string; name: string };
 type RequestWithUser = express.Request & { user?: SmokeUser };
@@ -118,6 +132,7 @@ app.get("/mongo-test", async (_req, res, next) => {
 app.get("/error", () => {
   throw new Error("Intentional Express smoke-test error");
 });
+registerRedisSmokeRoutes(app, redis as unknown as RedisSmokeClient);
 app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   res.status(500).json({ error: error.message });
 });
