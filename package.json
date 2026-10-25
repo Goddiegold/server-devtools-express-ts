@@ -15,7 +15,7 @@
     "mongoose": "^9.10.1",
     "mysql2": "^3.24.4",
     "pg": "^8.23.0",
-    "server-devtools": "file:../server-devtool/server-devtools-0.1.4.tgz"
+    "server-devtools": "0.1.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

@@ -36,6 +36,13 @@ Install dependencies:
 npm install
 ```
 
+This smoke app uses the published npm package (`server-devtools@0.1.6`). To
+refresh the exact registry version used by the smoke test:
+
+```sh
+npm install --save-exact server-devtools@0.1.6
+```
+
 ## Run
 
 The app uses the existing ServerDevTools preload:
@@ -43,6 +50,9 @@ The app uses the existing ServerDevTools preload:
 ```sh
 npm start
 ```
+
+The preload starts ServerDevTools before the application imports its
+instrumented frameworks and routes.
 
 Development watch mode:
 
