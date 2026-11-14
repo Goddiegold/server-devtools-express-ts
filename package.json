@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --import tsx --test src/redis-smoke.test.ts",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "start:dev": "tsx watch --import ./server-devtools.ts src/index.ts",
     "start": "tsx --import ./server-devtools.ts ./src/index.ts"
   },
@@ -15,7 +15,7 @@
     "mongoose": "^9.10.1",
     "mysql2": "^3.24.4",
     "pg": "^8.23.0",
-    "server-devtools": "0.1.6"
+    "server-devtools": "^0.1.8"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
